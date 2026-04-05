@@ -1,11 +1,3 @@
-/* ═══════════════════════════════════════════════════════════
-   FinTrack Pro — script.js
-   Premium Finance Dashboard — All JavaScript Logic
-   ═══════════════════════════════════════════════════════════ */
-
-// ════════════════════════════════════════════════════════════
-//  TRANSACTION DATA — Realistic Indian fintech sample data
-// ════════════════════════════════════════════════════════════
 const INITIAL_TXS = [
   { id:1,  date:"2026-01-01", description:"Salary – January",            category:"Salary",            amount:92000, type:"income",  notes:"Monthly CTC credit" },
   { id:2,  date:"2026-01-04", description:"Swiggy – Biryani",            category:"Food & Dining",     amount:420,   type:"expense", notes:"Instamart order" },
@@ -46,10 +38,7 @@ const INITIAL_TXS = [
   { id:37, date:"2026-04-03", description:"Amazon – Desk Accessories",    category:"Shopping",          amount:2400,  type:"expense", notes:"WFH setup upgrade" },
   { id:38, date:"2026-04-04", description:"Uber – Weekly commute",        category:"Transport",         amount:720,   type:"expense", notes:"Mon-Fri commute" },
 ];
-
-// ════════════════════════════════════════════════════════════
 //  CATEGORY CONFIG — icon, brand color, bg tint, text color
-// ════════════════════════════════════════════════════════════
 const CAT = {
   'Entertainment':     { icon:'🎬', color:'#8B5CF6', bg:'#EDE9FE', txt:'#5B21B6' },
   'Food & Dining':     { icon:'🍔', color:'#F59E0B', bg:'#FFFBEB', txt:'#92400E' },
@@ -63,10 +52,7 @@ const CAT = {
   'Education':         { icon:'🎓', color:'#06B6D4', bg:'#ECFEFF', txt:'#0E7490' },
   'Personal Care':     { icon:'🪷', color:'#EC4899', bg:'#FDF2F8', txt:'#9D174D' },
 };
-
-// ════════════════════════════════════════════════════════════
 //  STATE — persisted to localStorage on every change
-// ════════════════════════════════════════════════════════════
 const S = {
   txs:   JSON.parse(localStorage.getItem('ft_txs'))  || INITIAL_TXS,
   role:  localStorage.getItem('ft_role')             || 'admin',
@@ -76,10 +62,7 @@ const S = {
   nextId: 300,
   _searchTimer: null, // debounce handle for search input
 };
-
-// ════════════════════════════════════════════════════════════
 //  HELPERS
-// ════════════════════════════════════════════════════════════
 
 /** Format number as Indian Rupee string, e.g. ₹1,23,456 */
 const fmt    = n => '₹' + Math.abs(Math.round(n)).toLocaleString('en-IN');
@@ -161,10 +144,7 @@ function calcMoMChange() {
   const incChange = prev.income  > 0 ? ((curr.income  - prev.income)  / prev.income  * 100) : null;
   return { prev, curr, expChange, incChange };
 }
-
-// ════════════════════════════════════════════════════════════
 //  CHARTS
-// ════════════════════════════════════════════════════════════
 let tChart = null; // Bar / trend chart instance
 let dChart = null; // Donut / category chart instance
 
@@ -185,7 +165,7 @@ function initCharts() {
   const { text3, border, surface } = getThemeColors();
   const isDark  = S.theme === 'dark';
 
-  // ── Bar Chart (Income vs Expenses) ──────────────────────
+  // Bar Chart (Income vs Expenses) 
   const tCtx = document.getElementById('chart-trend');
   if (tCtx) {
     if (tChart) tChart.destroy();
@@ -246,7 +226,7 @@ function initCharts() {
     });
   }
 
-  // ── Donut Chart (Category Breakdown) ────────────────────
+  // Donut Chart (Category Breakdown)
   const dCtx = document.getElementById('chart-donut');
   if (dCtx && cats.length) {
     if (dChart) dChart.destroy();
@@ -295,10 +275,7 @@ function initCharts() {
     }
   }
 }
-
-// ════════════════════════════════════════════════════════════
 //  DASHBOARD
-// ════════════════════════════════════════════════════════════
 function renderDashboard() {
   const { inc, exp, bal, rate } = computeStats();
   const mom = calcMoMChange();
@@ -307,7 +284,7 @@ function renderDashboard() {
   const now = new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
   document.getElementById('dashboard-subtitle').textContent = `Updated · ${now}`;
 
-  // ── Net Balance ──────────────────────────────────────────
+  // Net Balance 
   const bEl = document.getElementById('sv-balance');
   bEl.textContent = fmt(bal);
   bEl.style.color = bal >= 0 ? 'var(--green)' : 'var(--red)';
@@ -315,21 +292,21 @@ function renderDashboard() {
     ? `<span class="trend-chip trend-up">↑ Positive cashflow</span>`
     : `<span class="trend-chip trend-down">↓ Negative cashflow</span>`;
 
-  // ── Total Income ─────────────────────────────────────────
+  // Total Income
   document.getElementById('sv-income').textContent = fmt(inc);
   const incCount = S.txs.filter(t => t.type === 'income').length;
   document.getElementById('sm-income').innerHTML = mom?.incChange != null
     ? `<span class="trend-chip ${mom.incChange >= 0 ? 'trend-up' : 'trend-down'}">${mom.incChange >= 0 ? '↑' : '↓'} ${Math.abs(Math.round(mom.incChange))}% vs last month</span>`
     : `${incCount} income entries`;
 
-  // ── Total Expenses ───────────────────────────────────────
+  //  Total Expenses
   document.getElementById('sv-expense').textContent = fmt(exp);
   const expCount = S.txs.filter(t => t.type === 'expense').length;
   document.getElementById('sm-expense').innerHTML = mom?.expChange != null
     ? `<span class="trend-chip ${mom.expChange > 0 ? 'trend-down' : 'trend-up'}">${mom.expChange > 0 ? '↑' : '↓'} ${Math.abs(Math.round(mom.expChange))}% vs last month</span>`
     : `${expCount} expense entries`;
 
-  // ── Savings Rate ─────────────────────────────────────────
+  // Savings Rate
   const sEl = document.getElementById('sv-savings');
   sEl.textContent = rate + '%';
   sEl.style.color = rate >= 20 ? 'var(--green)' : rate >= 10 ? 'var(--amber)' : 'var(--red)';
@@ -339,7 +316,7 @@ function renderDashboard() {
     ? `<span class="trend-chip trend-neu">${20 - rate}% below 20% target</span>`
     : `<span class="trend-chip trend-down">Low savings — review expenses</span>`;
 
-  // ── Recent 5 Transactions ────────────────────────────────
+  // Recent 5 Transactions
   const recent = [...S.txs].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
   const listEl = document.getElementById('recent-list');
   if (listEl) {
@@ -373,10 +350,7 @@ function renderDashboard() {
   syncRoleUI();
   setTimeout(initCharts, 60);
 }
-
-// ════════════════════════════════════════════════════════════
 //  TRANSACTIONS
-// ════════════════════════════════════════════════════════════
 
 /** Apply search, type filter, category filter, and sort */
 function filteredTxs() {
@@ -498,10 +472,7 @@ document.getElementById('tx-search').addEventListener('input', () => {
   clearTimeout(S._searchTimer);
   S._searchTimer = setTimeout(renderTx, 280);
 });
-
-// ════════════════════════════════════════════════════════════
 //  INSIGHTS
-// ════════════════════════════════════════════════════════════
 function renderInsights() {
   const { inc, exp, bal, rate } = computeStats();
   const cats    = buildCatData();
@@ -789,10 +760,7 @@ function delTx(id) {
   toast('🗑️ Transaction deleted');
   refresh();
 }
-
-// ════════════════════════════════════════════════════════════
 //  EXPORT TO CSV
-// ════════════════════════════════════════════════════════════
 function exportCSV() {
   const list = filteredTxs().length > 0 ? filteredTxs() : S.txs;
   const hdr  = ['Date', 'Description', 'Category', 'Amount', 'Type', 'Notes'];
@@ -814,10 +782,7 @@ function exportCSV() {
   URL.revokeObjectURL(url);
   toast('📥 CSV exported successfully');
 }
-
-// ════════════════════════════════════════════════════════════
 //  TAB / ROLE / THEME
-// ════════════════════════════════════════════════════════════
 
 /** Switch between dashboard, transactions, and insights tabs */
 function switchTab(tab) {
@@ -895,10 +860,7 @@ document.getElementById('modal-bd').addEventListener('click', e => {
 
 // Close modal on Escape key
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
-
-// ════════════════════════════════════════════════════════════
 //  INIT — runs once on page load
-// ════════════════════════════════════════════════════════════
 (function init() {
   // Apply persisted theme before rendering anything
   document.documentElement.setAttribute('data-theme', S.theme);
